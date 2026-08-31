@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+pytest-cache-files-*/
+test-tmp/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+storage/
+logs/
+eval-reports/
+eval-report*

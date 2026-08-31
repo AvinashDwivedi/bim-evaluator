@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Project-scoped BIM question answering">
+  <title>BIM Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css?v=20260819-1">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M7 12.5 20 5l13 7.5v15L20 35 7 27.5z"/><path d="m7 12.5 13 8 13-8M20 20.5V35"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">BIM Intelligence</div>
+          <div class="brand-caption">Verified project answers</div>
+        </div>
+        <button class="sidebar-close" id="sidebarCloseButton" type="button" aria-label="Close project panel">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <button class="new-chat" id="newChatButton" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        New conversation
+      </button>
+      <a class="new-chat nav-link" href="/evaluation">Evaluation dashboard</a>
+
+      <section class="project-card" aria-labelledby="projectHeading">
+        <div class="section-label" id="projectHeading">Active project</div>
+        <div class="project-name" id="projectName">Connecting…</div>
+        <div class="project-meta">
+          <span class="status-dot" id="connectionDot"></span>
+          <span id="connectionText">Checking model access</span>
+        </div>
+        <label class="scope-label" for="scopeSelect">Client / project scope</label>
+        <select class="scope-select" id="scopeSelect" aria-label="Client and project scope"></select>
+        <div class="project-stats">
+          <div><strong id="sourceCount">—</strong><span>Source</span></div>
+          <div><strong id="elementCount">—</strong><span>Elements</span></div>
+          <div><strong id="contractVersion">—</strong><span>Schema</span></div>
+        </div>
+      </section>
+
+      <section class="system-card">
+        <div class="section-label">Answer workflow</div>
+        <ol class="workflow-list" id="pipelineWorkflow">
+          <li class="workflow-empty"><span>·</span><div><strong>Waiting for a question</strong><small>Pipeline stages will appear here</small></div></li>
+        </ol>
+      </section>
+
+      <div class="sidebar-footer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></svg>
+        <span>Read-only · Project-scoped</span>
+      </div>
+    </aside>
+    <button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="Close project panel"></button>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" aria-label="Open project panel" aria-controls="sidebar" aria-expanded="false" type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div>
+          <h1>Ask the building model</h1>
+          <p>Answers are checked against authorized BIM evidence.</p>
+        </div>
+        <div class="topbar-badge"><span></span> Schema validated</div>
+      </header>
+
+      <section class="conversation" id="conversation" aria-live="polite">
+        <div class="welcome" id="welcomePanel">
+          <div class="welcome-icon">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 16 24 7l16 9v18l-16 9-16-9Z"/><path d="m8 16 16 10 16-10M24 26v17"/><circle cx="24" cy="26" r="4"/></svg>
+          </div>
+          <h2>Explore your BIM with confidence</h2>
+          <p>Ask about elements, areas, levels, phases, project measures, or permit knowledge. Every result is independently rerun before it reaches you.</p>
+          <div class="suggestions" id="suggestions">
+            <button type="button" data-question="What is the total modelled wall area?">
+              <span class="suggestion-icon count">Σ</span>
+              <span><strong>Aggregate model data</strong><small>What is the total modelled wall area?</small></span>
+              <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <button type="button" data-question="Break down BIM elements by IFC class.">
+              <span class="suggestion-icon floor">⌂</span>
+              <span><strong>Compare categories</strong><small>Break down BIM elements by IFC class.</small></span>
+              <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <button type="button" data-question="Show the project height and setback measures.">
+              <span class="suggestion-icon space">□</span>
+              <span><strong>Inspect project measures</strong><small>Show the project height and setback measures.</small></span>
+              <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="messages" id="messages"></div>
+      </section>
+
+      <footer class="composer-wrap">
+        <form class="composer" id="chatForm">
+          <textarea id="questionInput" rows="1" placeholder="Ask a question about this BIM…" aria-label="BIM question" maxlength="1000"></textarea>
+          <button class="send-button" id="sendButton" type="submit" aria-label="Send question">
+            <svg viewBox="0 0 24 24"><path d="m5 12 14-7-4 14-3-6Z"/><path d="m12 13 7-8"/></svg>
+          </button>
+        </form>
+        <p class="composer-note">Model answers may reflect incomplete BIM data. Review limitations and evidence.</p>
+      </footer>
+    </main>
+  </div>
+
+  <template id="userMessageTemplate">
+    <article class="message-row user-row">
+      <div class="message user-message"></div>
+      <div class="avatar user-avatar">A</div>
+    </article>
+  </template>
+
+  <template id="assistantMessageTemplate">
+    <article class="message-row assistant-row">
+      <div class="avatar assistant-avatar"><svg viewBox="0 0 24 24"><path d="M5 8.5 12 4l7 4.5v7L12 20l-7-4.5Z"/><path d="m5 8.5 7 4.5 7-4.5M12 13v7"/></svg></div>
+      <div class="message assistant-message">
+        <div class="answer-copy"></div>
+        <div class="answer-meta"></div>
+      </div>
+    </article>
+  </template>
+
+  <script src="/assets/app.js?v=20260829-1" defer></script>
+</body>
+</html>

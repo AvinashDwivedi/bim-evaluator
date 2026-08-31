@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Independent BIM evaluation dashboard">
+  <title>BIM Evaluator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/evaluation-dashboard.css?v=5">
+  <style>
+    .button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+    .selection-bar{padding:10px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;background:#fafbfe;color:var(--muted);font-size:12px}
+    .selection-bar label{display:flex;align-items:center;gap:7px;font-weight:700;color:var(--ink)}
+    .selection-bar button{border:0;background:transparent;color:var(--primary);font-weight:700;cursor:pointer}
+    .selection-bar button:disabled{color:#a3abba;cursor:not-allowed}
+    .selection-bar span{margin-left:auto}
+    .case-card{grid-template-columns:28px 45px minmax(230px,.9fr) minmax(360px,1.55fr) 105px}
+    .case-select{padding-top:7px}
+    .question-selector,.selection-bar input{accent-color:var(--primary);width:16px;height:16px;cursor:pointer}
+    .case-card.excluded{opacity:.58}
+    .correct-metric strong{color:var(--green)}
+    .incorrect-metric strong{color:var(--red)}
+    .case-card.correct .verdict-badge{background:var(--green-soft);color:var(--green)}
+    .case-card.incorrect .verdict-badge{background:var(--red-soft);color:var(--red)}
+    .cost-metric strong{color:var(--primary);font-size:21px}
+    .case-cost{display:block;color:var(--primary);font-size:10px;font-weight:800;margin-top:5px}
+    .reason{grid-column:4/6}
+    .case-trace{grid-column:4/6;color:var(--muted);font-size:11px;background:#f7f9fc;border-radius:9px;padding:9px 12px}
+    .case-trace summary{cursor:pointer;color:var(--primary);font-weight:700}
+    .case-trace h4{margin:10px 0 3px;color:var(--ink);font-size:10px;text-transform:uppercase}
+    .case-trace ul,.case-trace ol{margin:4px 0 0;padding-left:20px}.case-trace li{margin:3px 0}
+    @media(max-width:1100px){.case-card{grid-template-columns:28px 40px 1fr 100px}.comparison{grid-column:3/5}.reason,.case-trace{grid-column:3/5}}
+    @media(max-width:720px){.case-card{grid-template-columns:25px 35px 1fr}.verdict{grid-column:3}.comparison,.reason,.case-trace{grid-column:1/4}.selection-bar{align-items:flex-start;flex-wrap:wrap}.selection-bar span{width:100%;margin-left:0}}
+  </style>
+</head>
+<body>
+  <aside class="rail">
+    <a class="brand" href="/"><span class="brand-mark">B</span><span>BIM<br><small>Evaluator</small></span></a>
+    <nav><a href="/">Chat</a><a class="active" href="/evaluation">Evaluation</a></nav>
+    <div class="rail-note"><span></span>Independent examiner</div>
+  </aside>
+
+  <main>
+    <header class="page-header">
+      <div>
+        <div class="eyebrow">QUALITY ASSURANCE</div>
+        <h1>Evaluation runs</h1>
+        <p>Inspect every scoped test case and its independently judged BIM response.</p>
+      </div>
+      <div class="run-actions">
+        <a class="button secondary hidden" id="reportLink" target="_blank" rel="noopener">Open saved report</a>
+        <button class="button secondary hidden" id="stopButton" type="button">Stop run</button>
+        <button class="button primary" id="startButton" type="button"><span>▶</span> Start evaluation</button>
+      </div>
+    </header>
+
+    <section class="run-banner" id="runBanner">
+      <div class="status-icon" id="statusIcon">○</div>
+      <div class="run-copy"><div><span class="status-pill idle" id="statusPill">Idle</span><strong id="runTitle">Ready to evaluate</strong></div><p id="runStatus">Loading saved evaluation state…</p></div>
+      <div class="run-meta"><span>Default timeout</span><strong id="timeoutValue">10 minutes</strong></div>
+    </section>
+
+    <section class="metrics" aria-label="Evaluation summary">
+      <article><span>Test cases</span><strong id="total">0</strong><small>in current dataset</small></article>
+      <article><span>Completed</span><strong id="completed">0</strong><small id="progressLabel">0% progress</small></article>
+      <article class="correct-metric"><span>Correct</span><strong id="correct">0</strong><small>binary verdict</small></article>
+      <article class="incorrect-metric"><span>Incorrect</span><strong id="incorrect">0</strong><small>including errors</small></article>
+      <article><span>Errors</span><strong id="errors">0</strong><small>evaluation failures</small></article>
+      <article class="cost-metric"><span>Evaluation cost</span><strong id="evaluationCost">$0.00</strong><small id="evaluationCostStatus">estimated API cost</small></article>
+      <article class="cost-metric"><span>Today</span><strong id="dailyCost">$0.00</strong><small id="dailyCostStatus">all evaluation runs</small></article>
+    </section>
+
+    <section class="results-panel">
+      <div class="panel-head">
+        <div><h2>Evaluation cases</h2><p id="caseCount">Loading cases…</p></div>
+        <div class="filters" role="group" aria-label="Filter cases">
+          <button class="filter active" data-filter="all">All</button>
+          <button class="filter" data-filter="correct">Correct</button>
+          <button class="filter" data-filter="incorrect">Incorrect</button>
+          <button class="filter" data-filter="pending">Pending</button>
+        </div>
+      </div>
+      <div class="selection-bar">
+        <label><input id="selectAll" type="checkbox" checked> Select all questions</label>
+        <button id="clearSelection" type="button">Clear</button>
+        <label>Judge
+          <select id="judgeMode">
+            <option value="exact">Exact (local)</option>
+            <option value="semantic">Semantic (OpenAI)</option>
+          </select>
+        </label>
+        <span id="selectionCount">0 questions selected</span>
+      </div>
+      <div class="progress-track"><div id="progressBar"></div></div>
+      <div class="case-list" id="caseList"></div>
+    </section>
+  </main>
+  <script src="/assets/evaluation.js?v=5" defer></script>
+</body>
+</html>
